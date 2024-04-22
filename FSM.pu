@@ -7,7 +7,7 @@ State "Done" as s2 : waits i_start = 0
 s2: o_done = 1
 state RW {
     State "Init" as s3 : signal k, addr, data, cred, startzero
-    State "Read" as s4 : k--, addr++
+    State "Read" as s4 : k--
     State "Write mem" as s5 : write mem, addr++
     State "Write cred" as s6 : write cred, addr++
 }
