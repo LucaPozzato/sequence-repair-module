@@ -1,3 +1,33 @@
 @startuml FSM
 
+State "Reset" as s0 : waits i_rst = 0
+State "Wait" as s1 : waits i_start = 1
+s1: set signals
+State "Done" as s2 : waits i_start = 0
+s2: o_done = 1
+state RW {
+    State "Init" as s3 : signal k, addr, data, cred, startzero
+    State "Read" as s4 : k--, addr++
+    State "Write mem" as s5 : write mem, addr++
+    State "Write cred" as s6 : write cred, addr++
+}
+
+[*] --> s0
+s0 --> s0 : i_rst = 1
+s0 --> s1 : i_rst = 0
+s1 --> s0 : i_rst = 1
+s1 --> s1 : i_start = 0
+s2 --> s0 : i_rst = 1
+s2 --> s1 : i_start = 0
+s2 --> s2 : i_start = 1 && i_rst = 0
+
+s1 --> s3 : i_start = 1
+s3 --> s2 : k = 0
+s3 --> s4 : k != 0
+s4 --> s5
+s5 --> s6
+s6 --> s3
+
+RW --> s0 : i_rst = 1
+
 @enduml

@@ -18,6 +18,9 @@ def solve_string(array):
     tmp_credibility = 31
     start_with_zero = False
 
+    # BUG: when modifying twice the string, the credibility should not being updated
+    # FIXME: k = 0
+
     if array[0] == 0:
         start_with_zero = True
     for i in range(len(array)):
@@ -77,8 +80,21 @@ def validate():
 if __name__ == "__main__":
     main()
 
-# edge cases
-# [ ] memory could be finished and k is bigger -> see if possible
+# edge cases / corner cases
 # [ ] reads 0 as first value
 # [ ] reads 255 as first value
-# [ ] memory all 0
+# [ ] memory has alternated values
+# [ ] memory has only 2 values
+# [ ] memory all 0 values
+# [ ] memory contains a sequence of 0 values at the beginning
+# [ ] memory contains a sequence of 0 values in the middle
+# [ ] memory contains a sequence of 0 values at the end
+# [ ] memory has odd length
+# [ ] k = 0
+# [ ] rst signal is 1 in the middle of the process
+# [ ] rst signal after start = 1 -> maybe done goes to 1 and then to 0
+# [ ] start = 0 in the middle of the process
+# [ ] start = 1 after the process
+
+# food for thought
+# [ ] memory could be finished and k is bigger -> see if possible -> write undefined behavior

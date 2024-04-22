@@ -1,0 +1,12 @@
+*/**/.DS_Store
+.DS_Store
+# .gitignore
+/test/generated_tb
+__pycache__
+.venv
+vunit_out
+sim_build
+wave.vcd
+results.xml
+project_reti_logiche
+e~project_reti_logiche.o

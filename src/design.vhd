@@ -4,7 +4,6 @@
 -- Year: 2023/2024
 ----------------------------------------------------------------------------------
 
-
 library IEEE;   
 use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
@@ -27,9 +26,9 @@ entity project_reti_logiche is
     );
 end project_reti_logiche;
 
-architecture Behavioral of code is
+architecture project_arch of project_reti_logiche is
 
 begin
 
 
-end Behavioral;
+end project_arch;
