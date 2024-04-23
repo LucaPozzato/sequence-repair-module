@@ -47,7 +47,7 @@ architecture project_arch of project_reti_logiche is
         end process;
 
     -- lambda
-        lambda: process(current_state)
+        lambda: process(current_state, i_clk)
             variable temp_addr: SIGNED(15 downto 0);
             variable temp_k: SIGNED(9 downto 0);
             variable temp_cred: SIGNED(7 downto 0);
@@ -72,7 +72,7 @@ architecture project_arch of project_reti_logiche is
                     end if;
                     
                 when INIT_STATE =>
-                    if k = "00000000" then
+                    if k = "0000000000" then
                         next_state <= DONE_STATE;
                     else
                         next_state <= READ_STATE;
@@ -128,7 +128,7 @@ architecture project_arch of project_reti_logiche is
         end process;
 
     -- delta
-    delta: process(current_state)
+    delta: process(current_state, i_clk)
     begin
         o_done <= '0';            
         o_mem_addr <= (others => '0');
