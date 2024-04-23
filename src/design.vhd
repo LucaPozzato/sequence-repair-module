@@ -48,126 +48,134 @@ architecture project_arch of project_reti_logiche is
 
     -- lambda
         lambda: process(current_state, i_clk)
-            variable temp_addr: SIGNED(15 downto 0);
-            variable temp_k: SIGNED(9 downto 0);
-            variable temp_cred: SIGNED(7 downto 0);
+            variable temp_addr: UNSIGNED(15 downto 0);
+            variable temp_k: UNSIGNED(9 downto 0);
+            variable temp_cred: UNSIGNED(7 downto 0);
         -- possibilmente inizializzare segnali -> evitare latch
         begin
-            case current_state is
-                when RST_STATE =>
-                    if i_rst = '0' then 
-                        next_state <= WAIT_STATE;
-                    else
-                        next_state <= RST_STATE;
-                    end if;
-                    
-                when WAIT_STATE =>
-                    if i_start = '1' then
-                        k <= i_k;
-                        addr <= i_add;
-                        cred <= "00011111";
-                        next_state <= INIT_STATE;
-                    else 
-                        next_state <= WAIT_STATE;
-                    end if;
-                    
-                when INIT_STATE =>
-                    if k = "0000000000" then
-                        next_state <= DONE_STATE;
-                    else
-                        next_state <= READ_STATE;
-                        
-                    end if;
-
-                when READ_STATE =>
-                    temp_cred := SIGNED(cred);
-
-                    if i_add = addr then
-                        if SIGNED(i_mem_data) = 0 then
-                            data <= (others => '0');
-                            cred <= (others => '0');
+            if rising_edge(i_clk) then
+                case current_state is
+                    when RST_STATE =>
+                        if i_rst = '0' then 
+                            next_state <= WAIT_STATE;
+                        else
+                            next_state <= RST_STATE;
                         end if;
-                    else
-                        if SIGNED(i_mem_data) = 0 then
-                            if temp_cred > 0 then
-                                cred <= std_logic_vector(temp_cred - 1);
-                            else 
+                        
+                    when WAIT_STATE =>
+                        if i_start = '1' then
+                            k <= i_k;
+                            addr <= i_add;
+                            cred <= "00011111";
+                            next_state <= INIT_STATE;
+                        else 
+                            next_state <= WAIT_STATE;
+                        end if;
+                        
+                    when INIT_STATE =>
+                        if k = "0000000000" then
+                            next_state <= DONE_STATE;
+                        else
+                            next_state <= READ_STATE;
+                            
+                        end if;
+
+                    when READ_STATE =>
+                        temp_cred := UNSIGNED(cred);
+
+                        if i_add = addr then
+                            if UNSIGNED(i_mem_data) = 0 then
+                                data <= (others => '0');
                                 cred <= (others => '0');
+                            else
+                                data <= i_mem_data;
+                                cred <= "00011111";
                             end if;
                         else
-                            data <= i_mem_data;
-                            cred <= "00011111";
+                            if UNSIGNED(i_mem_data) = 0 then
+                                if temp_cred > 0 then
+                                    cred <= std_logic_vector(temp_cred - 1);
+                                else 
+                                    cred <= (others => '0');
+                                end if;
+                            else
+                                data <= i_mem_data;
+                                cred <= "00011111";
+                            end if;
                         end if;
-                    end if;
                             
-                    temp_k := SIGNED(k) - 1;
-                    k <= std_logic_vector(temp_k);
+                        temp_k := UNSIGNED(k) - 1;
+                        k <= std_logic_vector(temp_k);
+                        
 
-                    next_state <= WRITE_MEM_STATE;
-                
-                when WRITE_MEM_STATE =>
-                -- scrivo 
-                    temp_addr := SIGNED(addr) + 1;
-                    addr <= std_logic_vector(temp_addr);
-                    next_state <= WRITE_CRED_STATE;
-                
-                when WRITE_CRED_STATE =>
-                -- scrivo cred
-                    temp_addr := SIGNED(addr) + 1;
-                    addr <= std_logic_vector(temp_addr);
-                    next_state <= INIT_STATE;
+                        next_state <= WRITE_MEM_STATE;
+                    
+                    when WRITE_MEM_STATE =>
+                    -- scrivo 
+                        temp_addr := UNSIGNED(addr) + 1;
+                        addr <= std_logic_vector(temp_addr);
+                        next_state <= WRITE_CRED_STATE;
+                    
+                    when WRITE_CRED_STATE =>
+                    -- scrivo cred
+                        temp_addr := UNSIGNED(addr) + 1;
+                        addr <= std_logic_vector(temp_addr);
+                        next_state <= INIT_STATE;
 
-                when DONE_STATE =>
-                    if i_start = '0' then
-                        next_state <= WAIT_STATE;
-                    else
-                        next_state <= DONE_STATE;
+                    when DONE_STATE =>
+                        if i_start = '0' then
+                            next_state <= WAIT_STATE;
+                        else
+                            next_state <= DONE_STATE;
                     end if;
 
                 end case;
+            end if;
         end process;
 
     -- delta
     delta: process(current_state, i_clk)
     begin
-        o_done <= '0';            
-        o_mem_addr <= (others => '0');
-        o_mem_data <= (others => '0');
-        o_mem_we <= '0';
-        o_mem_en <= '0';
+        if rising_edge(i_clk) then
+            o_done <= '0';            
+            o_mem_addr <= (others => '0');
+            o_mem_data <= (others => '0');
+            o_mem_we <= '0';
+            o_mem_en <= '0';
 
-        case current_state is
-            when RST_STATE =>
+            case current_state is
+                when RST_STATE =>
+                    
+                when WAIT_STATE =>
                 
-            when WAIT_STATE =>
-            
-            when INIT_STATE =>
-                if SIGNED(k) = 0 then
-                    o_done <= '1';
-                else 
+                when INIT_STATE =>
+                    if UNSIGNED(k) = 0 then
+                        o_done <= '1';
+                    else 
+                        o_mem_addr <= addr;
+                        o_mem_data <= data;
+                        o_mem_en <= '1';
+                    end if;
+                
+                when READ_STATE =>
                     o_mem_addr <= addr;
                     o_mem_data <= data;
                     o_mem_en <= '1';
-                end if;
-            
-            when READ_STATE =>
-                o_mem_addr <= addr;
-                o_mem_data <= data;
-                o_mem_en <= '1';
-                o_mem_we <= '1';
-            
-            when WRITE_MEM_STATE =>
-                o_mem_addr <= addr;
-                o_mem_data <= cred;
-                o_mem_en <= '1';
-                o_mem_we <= '1';
-
-            when WRITE_CRED_STATE =>
+                    o_mem_we <= '1';
                 
-            when DONE_STATE =>
-                o_done <= '1';
+                when WRITE_MEM_STATE =>
+                    o_mem_addr <= addr;
+                    o_mem_data <= cred;
+                    o_mem_en <= '1';
+                    o_mem_we <= '1';
 
-        end case;
+                when WRITE_CRED_STATE =>
+                    
+                when DONE_STATE =>
+                    o_done <= '1';
+
+            end case;
+        end if;
     end process;
         
 end project_arch;
