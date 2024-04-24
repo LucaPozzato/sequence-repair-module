@@ -27,7 +27,7 @@ entity project_reti_logiche is
 end project_reti_logiche;
 
 architecture project_arch of project_reti_logiche is
-    type state_type is (RST_STATE, DONE_STATE, WAIT_STATE, INIT_STATE, READ_STATE, WRITE_MEM_STATE, WRITE_CRED_STATE);
+    type state_type is (RST_STATE, DONE_STATE, WAIT_STATE, INIT_STATE, WAIT_FOR_MEM_STATE, WAIT_FOR_MEM_STATE_2,  READ_STATE, WRITE_MEM_STATE, WRITE_CRED_STATE);
 
     signal k: std_logic_vector(9 downto 0);
     signal addr: std_logic_vector(15 downto 0);
@@ -47,13 +47,13 @@ architecture project_arch of project_reti_logiche is
         end process;
 
     -- lambda
-        lambda: process(current_state, i_clk)
+        lambda: process(current_state, i_start)
             variable temp_addr: UNSIGNED(15 downto 0);
             variable temp_k: UNSIGNED(9 downto 0);
             variable temp_cred: UNSIGNED(7 downto 0);
         -- possibilmente inizializzare segnali -> evitare latch
         begin
-            if rising_edge(i_clk) then
+            --if rising_edge(i_clk) then
                 case current_state is
                     when RST_STATE =>
                         if i_rst = '0' then 
@@ -76,10 +76,15 @@ architecture project_arch of project_reti_logiche is
                         if k = "0000000000" then
                             next_state <= DONE_STATE;
                         else
-                            next_state <= READ_STATE;
-                            
+                            next_state <= WAIT_FOR_MEM_STATE;
                         end if;
 
+                    when WAIT_FOR_MEM_STATE =>
+                        next_state <= WAIT_FOR_MEM_STATE_2;
+
+                    when WAIT_FOR_MEM_STATE_2 =>
+                        next_state <= READ_STATE;
+                    
                     when READ_STATE =>
                         temp_cred := UNSIGNED(cred);
 
@@ -107,7 +112,6 @@ architecture project_arch of project_reti_logiche is
                         temp_k := UNSIGNED(k) - 1;
                         k <= std_logic_vector(temp_k);
                         
-
                         next_state <= WRITE_MEM_STATE;
                     
                     when WRITE_MEM_STATE =>
@@ -130,13 +134,13 @@ architecture project_arch of project_reti_logiche is
                     end if;
 
                 end case;
-            end if;
+            --end if;
         end process;
 
     -- delta
-    delta: process(current_state, i_clk)
+    delta: process(current_state, i_start)
     begin
-        if rising_edge(i_clk) then
+        --if rising_edge(i_clk) then
             o_done <= '0';            
             o_mem_addr <= (others => '0');
             o_mem_data <= (others => '0');
@@ -157,6 +161,16 @@ architecture project_arch of project_reti_logiche is
                         o_mem_en <= '1';
                     end if;
                 
+                when WAIT_FOR_MEM_STATE =>
+                    o_mem_addr <= addr;
+                    o_mem_data <= data;
+                    o_mem_en <= '1';
+
+                when WAIT_FOR_MEM_STATE_2 =>
+                    o_mem_addr <= addr;
+                    o_mem_data <= data;
+                    o_mem_en <= '1';
+                
                 when READ_STATE =>
                     o_mem_addr <= addr;
                     o_mem_data <= data;
@@ -175,7 +189,7 @@ architecture project_arch of project_reti_logiche is
                     o_done <= '1';
 
             end case;
-        end if;
+        --end if;
     end process;
         
 end project_arch;
