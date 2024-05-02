@@ -10,7 +10,7 @@ wave.vcd
 results.xml
 project_reti_logiche
 e~project_reti_logiche.o
-design*
+# design*
 project*
 e~project*
 work-*
