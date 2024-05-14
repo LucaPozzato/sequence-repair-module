@@ -5,10 +5,10 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use std.textio.all;
 
-entity project_tb_number is
-end project_tb_number;
+entity project_tb_5 is
+end project_tb_5;
 
-architecture project_tb_arch of project_tb_number is
+architecture project_tb_05_arch of project_tb_5 is
     constant CLOCK_PERIOD : time := 20 ns;
     signal tb_clk : std_logic := '0';
     signal tb_rst, tb_start, tb_done : std_logic;
@@ -23,11 +23,11 @@ architecture project_tb_arch of project_tb_number is
     type ram_type is array (65535 downto 0) of std_logic_vector(7 downto 0);
     signal RAM : ram_type := (OTHERS => "00000000");
 
-    constant SCENARIO_LENGTH : integer := tb_string_length;
+    constant SCENARIO_LENGTH : integer := 26;
     type scenario_type is array (0 to SCENARIO_LENGTH*2-1) of integer;
 
-    signal scenario_input : scenario_type := (tb_string);
-    signal scenario_full  : scenario_type := (tb_expected_string);
+    signal scenario_input : scenario_type := (23, 0, 0, 0, 1, 0, 34, 0, 32, 0, 9, 0, 0, 0, 23, 0, 3, 0, 78, 0, 2, 0, 0, 0, 0, 0, 0, 0, 2, 0, 4, 0, 56, 0, 192, 0, 0, 0, 0, 0, 0, 0, 255, 0, 255, 0, 0, 0, 0, 0, 255, 0 );
+    signal scenario_full  : scenario_type := (23, 31, 23, 30, 1, 31, 34, 31, 32, 31, 9, 31, 9, 30, 23, 31, 3, 31, 78, 31, 2, 31, 2, 30, 2, 29, 2, 28, 2, 31, 4, 31, 56, 31, 192, 31, 192, 30, 192, 29, 192, 28, 255, 31, 255, 31, 255, 30, 255, 29, 255, 31 );
 
     signal memory_control : std_logic := '0';
     
@@ -147,8 +147,9 @@ begin
         while tb_done /= '1' loop                
             wait until rising_edge(tb_clk);
         end loop;
-
-        wait for 5 ns;
+        
+        -- test a delay where start doesn't set to zero soon after the done signal
+        wait for 45 ns;
         
         tb_start <= '0';
         

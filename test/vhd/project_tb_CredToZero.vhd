@@ -1,14 +1,12 @@
--- TB EXAMPLE PFRL 2023-2024
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use std.textio.all;
 
-entity project_tb_number is
-end project_tb_number;
+entity project_tb_CredToZero is
+end project_tb_CredToZero;
 
-architecture project_tb_arch of project_tb_number is
+architecture project_tb_arch of project_tb_CredToZero is
     constant CLOCK_PERIOD : time := 20 ns;
     signal tb_clk : std_logic := '0';
     signal tb_rst, tb_start, tb_done : std_logic;
@@ -23,12 +21,12 @@ architecture project_tb_arch of project_tb_number is
     type ram_type is array (65535 downto 0) of std_logic_vector(7 downto 0);
     signal RAM : ram_type := (OTHERS => "00000000");
 
-    constant SCENARIO_LENGTH : integer := tb_string_length;
+    constant SCENARIO_LENGTH : integer := 36;
     type scenario_type is array (0 to SCENARIO_LENGTH*2-1) of integer;
 
-    signal scenario_input : scenario_type := (tb_string);
-    signal scenario_full  : scenario_type := (tb_expected_string);
-
+    signal scenario_input : scenario_type := (128, 0,    0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0, 0,   0, 0,   0, 0,   0, 0,   0, 0,   0, 0,   0, 0,   0, 0,   0, 0,   0, 0,   0, 0,   0, 0, 108,  0,   0,  0 );
+    signal scenario_full  : scenario_type := (128, 31, 128, 30, 128, 29, 128, 28, 128, 27, 128, 26, 128, 25, 128, 24, 128, 23, 128, 22, 128, 21, 128, 20, 128, 19, 128, 18, 128, 17, 128, 16, 128, 15, 128, 14, 128, 13, 128, 12, 128, 11, 128, 10, 128, 9, 128, 8, 128, 7, 128, 6, 128, 5, 128, 4, 128, 3, 128, 2, 128, 1, 128, 0, 128, 0, 128, 0, 108, 31, 108, 30 );
+   
     signal memory_control : std_logic := '0';
     
     constant SCENARIO_ADDRESS : integer := 1234;
@@ -177,14 +175,14 @@ begin
         assert tb_o_mem_en = '0' or tb_o_mem_we = '0' report "TEST FALLITO o_mem_en !=0 memory should not be written after done." severity failure;
 
         for i in 0 to SCENARIO_LENGTH*2-1 loop
-            assert RAM(SCENARIO_ADDRESS+i) = std_logic_vector(to_unsigned(scenario_full(i),8)) report "TEST FALLITO @ OFFSET=" & integer'image(i) & " expected= " & integer'image(scenario_full(i)) & " actual=" & integer'image(to_integer(unsigned(RAM(i)))) severity failure;
+            assert RAM(SCENARIO_ADDRESS+i) = std_logic_vector(to_unsigned(scenario_full(i),8)) report "TEST FALLITO @ OFFSET=" & integer'image(i) & " expected= " & integer'image(scenario_full(i)) & " actual=" & integer'image(to_integer(unsigned(RAM(SCENARIO_ADDRESS+i)))) severity failure;
         end loop;
 
         wait until falling_edge(tb_start);
         assert tb_done = '1' report "TEST FALLITO o_done !=0 after reset before start" severity failure;
         wait until falling_edge(tb_done);
 
-        assert false report "Simulation Ended! TEST PASSATO (EXAMPLE)" severity failure;
+        assert false report "Simulation Ended! TEST PASSATO (Cred go to zero then back up)" severity failure;
     end process;
 
 end architecture;

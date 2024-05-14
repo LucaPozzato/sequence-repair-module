@@ -5,10 +5,10 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use std.textio.all;
 
-entity project_tb_number is
-end project_tb_number;
+entity empty is
+end empty;
 
-architecture project_tb_arch of project_tb_number is
+architecture project_tb_arch of empty is
     constant CLOCK_PERIOD : time := 20 ns;
     signal tb_clk : std_logic := '0';
     signal tb_rst, tb_start, tb_done : std_logic;
@@ -23,11 +23,11 @@ architecture project_tb_arch of project_tb_number is
     type ram_type is array (65535 downto 0) of std_logic_vector(7 downto 0);
     signal RAM : ram_type := (OTHERS => "00000000");
 
-    constant SCENARIO_LENGTH : integer := tb_string_length;
-    type scenario_type is array (0 to SCENARIO_LENGTH*2-1) of integer;
+    constant SCENARIO_LENGTH : integer := 0;
+    type scenario_type is array (0 to 0) of integer;
 
-    signal scenario_input : scenario_type := (tb_string);
-    signal scenario_full  : scenario_type := (tb_expected_string);
+    signal scenario_input : scenario_type := (others => 0);
+    signal scenario_full  : scenario_type := (others => 0);
 
     signal memory_control : std_logic := '0';
     

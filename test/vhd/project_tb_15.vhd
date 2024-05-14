@@ -1,14 +1,12 @@
--- TB EXAMPLE PFRL 2023-2024
-
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 use std.textio.all;
 
-entity project_tb_number is
-end project_tb_number;
+entity project_tb_15 is
+end entity;
 
-architecture project_tb_arch of project_tb_number is
+architecture project_tb_3_arch of project_tb_15 is
     constant CLOCK_PERIOD : time := 20 ns;
     signal tb_clk : std_logic := '0';
     signal tb_rst, tb_start, tb_done : std_logic;
@@ -23,15 +21,15 @@ architecture project_tb_arch of project_tb_number is
     type ram_type is array (65535 downto 0) of std_logic_vector(7 downto 0);
     signal RAM : ram_type := (OTHERS => "00000000");
 
-    constant SCENARIO_LENGTH : integer := tb_string_length;
+    constant SCENARIO_LENGTH : integer := 33;
     type scenario_type is array (0 to SCENARIO_LENGTH*2-1) of integer;
 
-    signal scenario_input : scenario_type := (tb_string);
-    signal scenario_full  : scenario_type := (tb_expected_string);
+    signal scenario_input : scenario_type := (0, 0, 255,  0,   0,  0,   0,  0, 137,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0, 111,  0,   0,  0,   0,  0,   0,  0, 181,  0,   0,  0,   0,  0,   0,  0,   0,  0,   0,  0, 246,  0, 124,  0,   0,  0, 93,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0);
+    signal scenario_full  : scenario_type := (0, 0, 255, 31, 255, 30, 255, 29, 137, 31, 137, 30, 137, 29, 137, 28, 137, 27, 137, 26, 137, 25, 137, 24, 137, 23, 111, 31, 111, 30, 111, 29, 111, 28, 181, 31, 181, 30, 181, 29, 181, 28, 181, 27, 181, 26, 246, 31, 124, 31, 124, 30, 93, 31, 93, 30, 93, 29, 93, 28, 93, 27, 93, 26, 93, 25);
 
     signal memory_control : std_logic := '0';
-    
-    constant SCENARIO_ADDRESS : integer := 1234;
+
+    constant SCENARIO_ADDRESS : integer := 532;
 
     component project_reti_logiche is
         port (
@@ -86,14 +84,14 @@ begin
             end if;
         end if;
     end process;
-    
+
     memory_signal_swapper : process(memory_control, init_o_mem_addr, init_o_mem_data,
                                     init_o_mem_en,  init_o_mem_we,   exc_o_mem_addr,
                                     exc_o_mem_data, exc_o_mem_en, exc_o_mem_we)
     begin
         -- This is necessary for the testbench to work: we swap the memory
         -- signals from the component to the testbench when needed.
-    
+
         tb_o_mem_addr <= init_o_mem_addr;
         tb_o_mem_data <= init_o_mem_data;
         tb_o_mem_en   <= init_o_mem_en;
@@ -106,7 +104,7 @@ begin
             tb_o_mem_we   <= exc_o_mem_we;
         end if;
     end process;
-    
+
     -- This process provides the correct scenario on the signal controlled by the TB
     create_scenario : process
     begin
@@ -177,7 +175,7 @@ begin
         assert tb_o_mem_en = '0' or tb_o_mem_we = '0' report "TEST FALLITO o_mem_en !=0 memory should not be written after done." severity failure;
 
         for i in 0 to SCENARIO_LENGTH*2-1 loop
-            assert RAM(SCENARIO_ADDRESS+i) = std_logic_vector(to_unsigned(scenario_full(i),8)) report "TEST FALLITO @ OFFSET=" & integer'image(i) & " expected= " & integer'image(scenario_full(i)) & " actual=" & integer'image(to_integer(unsigned(RAM(i)))) severity failure;
+            assert RAM(SCENARIO_ADDRESS+i) = std_logic_vector(to_unsigned(scenario_full(i),8)) report "TEST FALLITO @ OFFSET=" & integer'image(i) & " expected= " & integer'image(scenario_full(i)) & " actual=" & integer'image(to_integer(unsigned(RAM(SCENARIO_ADDRESS+i)))) severity failure;
         end loop;
 
         wait until falling_edge(tb_start);
@@ -186,5 +184,4 @@ begin
 
         assert false report "Simulation Ended! TEST PASSATO (EXAMPLE)" severity failure;
     end process;
-
 end architecture;
