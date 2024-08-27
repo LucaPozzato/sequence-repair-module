@@ -47,19 +47,20 @@ architecture project_arch of project_reti_logiche is
         end process;
 
     -- lambda
-        lambda: process(current_state, i_start)
+        lambda: process(i_clk, i_rst)
             variable temp_addr: UNSIGNED(15 downto 0);
             variable temp_k: UNSIGNED(9 downto 0);
-            -- variable temp_data: UNSIGNED(7 downto 0);
             variable temp_data: UNSIGNED(7 downto 0);
-        -- possibilmente inizializzare segnali -> evitare latch
-        begin
-            addr <= (others => '0');
-            cred <= (others => '0');
-            k <= (others => '0');
-            data <= (others => '0');
 
-            -- if rising_edge(i_clk) then
+        begin
+            
+            if rising_edge(i_clk) then
+                addr <= (others => '0');
+                cred <= (others => '0');
+                k <= (others => '0');
+                data <= (others => '0');
+
+                
                 case current_state is
                     when RST_STATE =>
                         if i_rst = '0' then 
@@ -180,13 +181,13 @@ architecture project_arch of project_reti_logiche is
                         next_state <= RST_STATE;
 
                 end case;
-            -- end if;
+            end if;
         end process;
 
     -- delta
-    delta: process(current_state, i_start)
+    delta: process(i_clk, i_rst)
     begin
-        -- if rising_edge(i_clk) then
+        if rising_edge(i_clk) then
             o_done <= '0';            
             o_mem_addr <= (others => '0');
             o_mem_data <= (others => '0');
@@ -241,7 +242,7 @@ architecture project_arch of project_reti_logiche is
                 when others =>
 
             end case;
-        -- end if;
+        end if;
     end process;
         
 end project_arch;

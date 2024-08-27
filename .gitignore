@@ -14,3 +14,6 @@ e~project_reti_logiche.o
 e~project*
 work-*
 /build
+/thesis/*
+!/thesis/*thesis_plain.pdf
+!/thesis/*thesis_plain.tex

@@ -1,0 +1,211 @@
+% A LaTeX template for ARTICLE version of the MSc Thesis submissions to 
+% Politecnico di Milano (PoliMi) - School of Industrial and Information Engineering
+%
+% S. Bonetti, A. Gruttadauria, G. Mescolini, A. Zingaro
+% e-mail: template-tesi-ingind@polimi.it
+%
+% Last Revision: October 2021
+%
+% Copyright 2021 Politecnico di Milano, Italy. Inc. NC-BY
+
+\documentclass[11pt,a4paper]{article} 
+
+%------------------------------------------------------------------------------
+%	REQUIRED PACKAGES AND  CONFIGURATIONS
+%------------------------------------------------------------------------------
+% PACKAGES FOR TITLES
+\usepackage{titlesec}
+\usepackage{color}
+
+% PACKAGES FOR LANGUAGE AND FONT
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[T1]{fontenc} % Font encoding
+\usepackage{FiraMono}
+\usepackage{inconsolata}
+
+% PACKAGES FOR IMAGES
+\usepackage{graphicx}
+\graphicspath{{Images/}}
+\usepackage{eso-pic} % For the background picture on the title page
+\usepackage{subfig} % Numbered and caption subfigures using \subfloat
+\usepackage{caption} % Coloured captions
+\usepackage{transparent}
+
+% STANDARD MATH PACKAGES
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{bm}
+\usepackage[overload]{empheq}  % For braced-style systems of equations
+
+% PACKAGES FOR TABLES
+\usepackage{tabularx}
+\usepackage{longtable} % tables that can span several pages
+\usepackage{colortbl}
+
+% PACKAGES FOR ALGORITHMS (PSEUDO-CODE)
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% PACKAGES FOR REFERENCES & BIBLIOGRAPHY
+\usepackage[colorlinks=true,linkcolor=black,anchorcolor=black,citecolor=black,filecolor=black,menucolor=black,runcolor=black,urlcolor=black]{hyperref} % Adds clickable links at references
+\usepackage{cleveref}
+\usepackage[square, numbers, sort&compress]{natbib} % Square brackets, citing references with numbers, citations sorted by appearance in the text and compressed
+\bibliographystyle{plain} % You may use a different style adapted to your field
+
+% PACKAGES FOR THE APPENDIX
+\usepackage{appendix}
+
+% PACKAGES FOR ITEMIZE & ENUMERATES 
+\usepackage{enumitem}
+
+% OTHER PACKAGES
+\usepackage{amsthm,thmtools,xcolor} % Coloured "Theorem"
+\usepackage{comment} % Comment part of code
+\usepackage{fancyhdr} % Fancy headers and footers
+\usepackage{lipsum} % Insert dummy text
+\usepackage{tcolorbox} % Create coloured boxes (e.g. the one for the key-words)
+
+%-------------------------------------------------------------------------
+%	NEW COMMANDS DEFINED
+%-------------------------------------------------------------------------
+% EXAMPLES OF NEW COMMANDS -> here you see how to define new commands
+\newcommand{\bea}{\begin{eqnarray}} % Shortcut for equation arrays
+\newcommand{\eea}{\end{eqnarray}}
+\newcommand{\e}[1]{\times 10^{#1}}  % Powers of 10 notation
+\newcommand{\mathbbm}[1]{\text{\usefont{U}{bbm}{m}{n}#1}} % From mathbbm.sty
+\newcommand{\pdev}[2]{\frac{\partial#1}{\partial#2}}
+\newcommand{\m}[1]{{\fontfamily{fvm}\selectfont #1}}
+\newcommand{\inc}[1]{{\fontfamily{zi4}\selectfont #1}}
+% NB: you can also override some existing commands with the keyword \renewcommand
+
+%----------------------------------------------------------------------------
+%	ADD YOUR PACKAGES (be careful of package interaction)
+%----------------------------------------------------------------------------
+
+
+%----------------------------------------------------------------------------
+%	ADD YOUR DEFINITIONS AND COMMANDS (be careful of existing commands)
+%----------------------------------------------------------------------------
+
+
+% Do not change Configuration_files/config.tex file unless you really know what you are doing. 
+% This file ends the configuration procedures (e.g. customizing commands, definition of new commands)
+\input{Configuration_files/config}
+
+% Insert here the info that will be displayed into your Title page 
+% -> title of your work
+\renewcommand{\title}{Title}
+% -> author name and surname
+\renewcommand{\author}{Name Surname}
+% -> MSc course
+\newcommand{\course}{Xxxxxxxxxxxx Engineering - Ingegneria Xxxxxxxxxxxx}
+% -> advisor name and surname
+\newcommand{\advisor}{Prof. Name Surname}
+% IF AND ONLY IF you need to modify the co-supervisors you also have to modify the file Configuration_files/title_page.tex (ONLY where it is marked)
+\newcommand{\firstcoadvisor}{Name Surname} % insert if any otherwise comment
+\newcommand{\secondcoadvisor}{Name Surname} % insert if any otherwise comment
+% -> author ID
+\newcommand{\ID}{Student ID}
+% -> academic year
+\newcommand{\YEAR}{20XX-20XX}
+% -> abstract (only in English)
+\renewcommand{\abstract}{Here goes the Abstract in English of your thesis (in article format)
+followed by a list of keywords.
+The Abstract is a concise summary of the content of the thesis (single page of text)
+and a guide to the most important contributions included in your thesis.
+The Abstract is the very last thing you write.
+It should be a self-contained text and should be clear
+to someone who hasn't (yet) read the whole manuscript.
+The Abstract should contain the answers to the main research questions
+that have been addressed in your thesis.
+It needs to summarize the motivations and the adopted approach as well as
+the findings of your work and their relevance and impact.
+The Abstract is the part appearing in the record of your thesis inside POLITesi,
+the Digital Archive of PhD and Master Theses (Laurea Magistrale) of Politecnico di Milano.
+The Abstract will be followed by a list of four to six keywords.
+Keywords are a tool to help indexers and search engines to find relevant documents.
+To be relevant and effective, keywords must be chosen carefully.
+They should represent the content of your work and be specific to your field or sub-field.
+Keywords may be a single word or two to four words. }
+
+% -> key-words (only in English)
+\newcommand{\keywords}{here, the keywords, of your thesis}
+
+%-------------------------------------------------------------------------
+%	BEGIN OF YOUR DOCUMENT
+%-------------------------------------------------------------------------
+\begin{document}
+
+%-----------------------------------------------------------------------------
+% TITLE PAGE
+%-----------------------------------------------------------------------------
+% Do not change Configuration_files/TitlePage.tex (Modify it IF AND ONLY IF you need to add or delete the Co-advisors)
+% This file creates the Title Page of the document
+\input{Configuration_files/title_page}
+
+\section{Introduzione}
+\subsection{Specifiche}
+Il componente riceve in ingresso una sequenza di \m{K} parole \m{W} il cui valore è compreso tra 0 e 255, dove il valore zero va interpretato come \textit{"valore non specificato"}. Le parole sono memorizzate a partire da un indirizzo \m{ADD} ogni due byte (e.g. \m{ADD, ADD+2... ADD+2*(K-1)}).
+Il byte mancante (agli indirizzi \m{ADD+1, ADD+3..., ADD+2(K-1)+1}) dovrà essere completato con il valore di \textit{credibilità} \m{C} della relativa parola \m{W}: essa può assumere valori tra 31 e 0, è pari a 31 ogni volta che il valore \m{W} è \textit{valido} (diverso da zero) mentre viene decrementato rispetto al valore precedente nel caso in cui si incontri uno zero in \m{W}.\\
+L'obiettivo del componente è processare la stringa e modificarla come segue:
+\begin{itemize}
+    \item[-] sostituire le parole con valore 0 con l'ultimo valore \textit{valido}, cioè l'ultimo valore della sequenza letto diverso da zero;
+    \item[-] completare per ogni parola il byte mancante con il suo valore di \textit{credibilità} \m{C}.
+\end{itemize} 
+
+Un esempio di sequenza in ingresso è ad esempio (con valori in decimale):
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|}
+        \hline
+        \textbf{120} & 0 & \textbf{10} & 0 & \textbf{0} & 0 & \textbf{0} & 0 & \textbf{16} & 0 \\ \hline
+    \end{tabular}
+    \caption*{Stringa in ingresso con \m{K = 5} parole (in \textbf{grassetto})}
+    
+    \begin{tabular}{|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|}
+        \hline
+        \textbf{120} & \textit{31} & \textbf{10} & \textit{31} & \textbf{\textit{10}} & \textit{30} & \textbf{\textit{10}} & \textit{29} & \textbf{16} & \textit{31} \\ \hline
+    \end{tabular}
+    \caption*{Stringa processata (in \textit{corsivo} le modifiche)}
+\end{table}
+
+\textcolor{red}{Da completare con un esempio in grande}
+
+\section{Architettura}
+\subsection{Interfaccia e funzionamento}
+
+Il modulo ha la seguente interfaccia:
+\begin{itemize}
+    \item tre segnali principali
+    \begin{itemize}
+        \item \m{i\_start}: 1 bit, segnale di inizio elaborazione;
+        \item \m{i\_add}: 16 bit, indirizzo della memoria da cui inizia la porzione da processare;
+        \item \m{i\_k}: 10 bit, numero di parole da elaborare;
+    \end{itemize}
+    \item due ingressi ausiliari
+    \begin{itemize}
+        \item \m{i\_clk}: 1 bit, segnale di clock unico per tutto il sistema;
+        \item \m{i\_rst}: 1 bit, segnale di reset asincrono;
+    \end{itemize}
+    \item un'uscita principale
+    \begin{itemize}
+        \item \m{o\_done}: 1 bit, segnale di terminata elaborazione;
+    \end{itemize}
+    \item cinque connessioni con la memoria
+    \begin{itemize}
+        \item \m{i\_mem\_data}: 8 bit, contenuto in ingresso dalla memoria quando letta;
+        \item \m{o\_mem\_en}: 1 bit, segnale di \textit{enable}, deve essere 1 per comunicare con la memoria;
+        \item \m{o\_mem\_we}: 1 bit, segnale di \textit{write enable}, deve essere 1 per scrivere, 0 per leggere;
+        \item \m{o\_mem\_addr}: 16 bit, indirizzo della memoria da cui leggere o in cui scrivere;
+        \item \m{o\_mem\_data}: 8 bit, dato che verrà scritto in memoria;
+    \end{itemize}
+\end{itemize}
+Tutti i segnali sono sincroni e devono essere interpretati sul fronte di salita del clock; fa eccezione il segnale di reset che è asincrono.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.45]{export project.png}
+    \caption*{Diagramma del componente}
+\end{figure}
+
+\end{document}
