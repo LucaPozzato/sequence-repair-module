@@ -198,9 +198,7 @@ Tutti i segnali sono sincroni e devono essere interpretati sul fronte di salita 
 
 \vspace{0.2em}\subsection{Report di sintesi}
 
-\vspace{0.3em}\hspace{1em} Dopo aver sintetizzato il design del progetto, il circuito è stato simulato utilizzando il test bench fornito. Il circuito si comporta correttamente, superando il test sia con la simulazione comportamentale (behavioral simulation) che con la simulazione post-sintesi (post-synthesis simulation). Di seguito, sono riportate le tabelle con il timing report e l'utilizzo delle risorse. Nella \textcolor{red}{Testo mancante}\autoref{tab:timing_report} 
-è mostrato il timing report del design; analizzandolo, si può notare che il Worst Negative Slack (WNS) è di 15,413 ns. Un WNS di 15,413 ns con un periodo di clock di 20 ns indica che il circuito impiega (20 ns - 15,413 ns = 4,587 ns) per completare l'esecuzione di uno stato della FSM del design, dato che la FSM è stata sincronizzata in modo da eseguire uno stato per ogni ciclo di clock, come è possibile notare dalla \textcolor{red}{Testo mancante}
-\autoref{fig:state_clk_sync}.
+\vspace{0.3em}\hspace{1em} Dopo aver sintetizzato il design del progetto, il circuito è stato simulato utilizzando il test bench fornito. Il circuito si comporta correttamente, superando il test sia con la simulazione comportamentale (behavioral simulation) che con la simulazione post-sintesi (post-synthesis simulation). Di seguito, sono riportate le tabelle con il timing report e l'utilizzo delle risorse. Nella \autoref{tab:timing_report} è mostrato il timing report del design; analizzandolo, si può notare che il Worst Negative Slack (WNS) è di 15,413 ns. Un WNS di 15,413 ns con un periodo di clock di 20 ns indica che il circuito impiega (20 ns - 15,413 ns = 4,587 ns) per completare l'esecuzione di uno stato della FSM del design, dato che la FSM è stata sincronizzata in modo da eseguire uno stato per ogni ciclo di clock, come è possibile notare dalla \autoref{fig:state_clk_sync}.
 
 \vspace{1em}
 \begin{table}[h]
