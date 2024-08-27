@@ -1,0 +1,385 @@
+\documentclass[11pt,a4paper]{article} 
+
+%------------------------------------------------------------------------------
+%	REQUIRED PACKAGES AND  CONFIGURATIONS
+%------------------------------------------------------------------------------
+
+\usepackage{titling}
+\usepackage{tocloft}
+% \usepackage{geometry}
+\usepackage{booktabs}
+% \usepackage{graphicx}
+%\usepackage{caption}
+% \usepackage{subcaption}
+\usepackage{multirow}
+% \usepackage[italian]{babel}
+% \usepackage[colorlinks=true, linkcolor=black, urlcolor=blue, citecolor=blue]{hyperref}
+
+% PACKAGES FOR TITLES
+\usepackage{titlesec}
+\usepackage{color}
+
+% PACKAGES FOR LANGUAGE AND FONT
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage[T1]{fontenc} % Font encoding
+\usepackage{FiraMono}
+\usepackage{inconsolata}
+
+% PACKAGES FOR IMAGES
+\usepackage{graphicx}
+\graphicspath{{Images/}}
+\usepackage{eso-pic} % For the background picture on the title page
+\usepackage{subfig} % Numbered and caption subfigures using \subfloat
+\usepackage{caption} % Coloured captions
+\usepackage{transparent}
+
+% STANDARD MATH PACKAGES
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{bm}
+\usepackage[overload]{empheq}  % For braced-style systems of equations
+
+% PACKAGES FOR TABLES
+\usepackage{tabularx}
+\usepackage{longtable} % tables that can span several pages
+\usepackage{colortbl}
+
+% PACKAGES FOR ALGORITHMS (PSEUDO-CODE)
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% PACKAGES FOR REFERENCES & BIBLIOGRAPHY
+\usepackage[colorlinks=true,linkcolor=black,anchorcolor=black,citecolor=black,filecolor=black,menucolor=black,runcolor=black,urlcolor=black]{hyperref} % Adds clickable links at references
+\usepackage{cleveref}
+\usepackage[square, numbers, sort&compress]{natbib} % Square brackets, citing references with numbers, citations sorted by appearance in the text and compressed
+\bibliographystyle{plain} % You may use a different style adapted to your field
+
+% PACKAGES FOR THE APPENDIX
+\usepackage{appendix}
+
+% PACKAGES FOR ITEMIZE & ENUMERATES 
+\usepackage{enumitem}
+
+% OTHER PACKAGES
+\usepackage{amsthm,thmtools,xcolor} % Coloured "Theorem"
+\usepackage{comment} % Comment part of code
+\usepackage{fancyhdr} % Fancy headers and footers
+\usepackage{lipsum} % Insert dummy text
+\usepackage{tcolorbox} % Create coloured boxes (e.g. the one for the key-words)
+
+%-------------------------------------------------------------------------
+%	NEW COMMANDS DEFINED
+%-------------------------------------------------------------------------
+% EXAMPLES OF NEW COMMANDS -> here you see how to define new commands
+\newcommand{\bea}{\begin{eqnarray}} % Shortcut for equation arrays
+\newcommand{\eea}{\end{eqnarray}}
+\newcommand{\e}[1]{\times 10^{#1}}  % Powers of 10 notation
+\newcommand{\mathbbm}[1]{\text{\usefont{U}{bbm}{m}{n}#1}} % From mathbbm.sty
+\newcommand{\pdev}[2]{\frac{\partial#1}{\partial#2}}
+\newcommand{\m}[1]{{\fontfamily{fvm}\selectfont #1}}
+\newcommand{\inc}[1]{{\fontfamily{zi4}\selectfont #1}}
+% NB: you can also override some existing commands with the keyword \renewcommand
+
+%----------------------------------------------------------------------------
+%	ADD YOUR PACKAGES (be careful of package interaction)
+%----------------------------------------------------------------------------
+
+
+%----------------------------------------------------------------------------
+%	ADD YOUR DEFINITIONS AND COMMANDS (be careful of existing commands)
+%----------------------------------------------------------------------------
+
+
+% Do not change Configuration_files/config.tex file unless you really know what you are doing. 
+% This file ends the configuration procedures (e.g. customizing commands, definition of new commands)
+\input{Configuration_files/config}
+
+% Insert here the info that will be displayed into your Title page 
+% -> title of your work
+\renewcommand{\title}{Relazione Prova finale di Reti Logiche}
+% -> author name and surname
+\renewcommand{\author}{Luca Pozzato - 10794909}
+% -> MSc course
+%\newcommand{\course}{Andrea Rossi - 10799170}
+% -> advisor name and surname
+%\newcommand{\advisor}{Prof. Name Surname}
+% IF AND ONLY IF you need to modify the co-supervisors you also have to modify the file Configuration_files/title_page.tex (ONLY where it is marked)
+%\newcommand{\firstcoadvisor}{Name Surname} % insert if any otherwise comment
+%\newcommand{\secondcoadvisor}{Name Surname} % insert if any otherwise comment
+% -> author ID
+\newcommand{\ID}{Andrea Rossi - 10799170}
+% -> academic year
+\newcommand{\YEAR}{2023-2024}
+% -> abstract (only in English)
+\renewcommand{\abstract}{Lo scopo del progetto è la descrizione in VHDL di un componente hardware che, interfacciandosi con una memoria in cui sono presenti alcuni dati, esegue un'analisi su essi e completa i dati mancanti della memoria stessa.}
+
+% -> key-words (only in English)
+%\newcommand{\keywords}{here, the keywords, of your thesis}
+
+%-------------------------------------------------------------------------
+%	BEGIN OF YOUR DOCUMENT
+%-------------------------------------------------------------------------
+\begin{document}
+
+%-----------------------------------------------------------------------------
+% TITLE PAGE
+%-----------------------------------------------------------------------------
+% Do not change Configuration_files/TitlePage.tex (Modify it IF AND ONLY IF you need to add or delete the Co-advisors)
+% This file creates the Title Page of the document
+\input{Configuration_files/title_page}
+
+\section{Introduzione}
+\subsection{Specifiche}
+Il componente riceve in ingresso una sequenza di \m{K} parole \m{W} il cui valore è compreso tra 0 e 255, dove il valore zero va interpretato come \textit{"valore non specificato"}. Le parole sono memorizzate a partire da un indirizzo \m{ADD} ogni due byte (e.g. \m{ADD, ADD+2... ADD+2*(K-1)}).
+Il byte mancante (agli indirizzi \m{ADD+1, ADD+3..., ADD+2(K-1)+1}) dovrà essere completato con il valore di \textit{credibilità} \m{C} della relativa parola \m{W}: essa può assumere valori tra 31 e 0, è pari a 31 ogni volta che il valore \m{W} è \textit{valido} (diverso da zero) mentre viene decrementato rispetto al valore precedente nel caso in cui si incontri uno zero in \m{W}.\\
+L'obiettivo del componente è processare la stringa e modificarla come segue:
+\begin{itemize}
+    \item[-] sostituire le parole con valore 0 con l'ultimo valore \textit{valido}, cioè l'ultimo valore della sequenza letto diverso da zero;
+    \item[-] completare per ogni parola il byte mancante con il suo valore di \textit{credibilità} \m{C}.
+\end{itemize} 
+
+Un esempio di sequenza in ingresso è ad esempio (con valori in decimale):
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|}
+        \hline
+        \textbf{120} & 0 & \textbf{10} & 0 & \textbf{0} & 0 & \textbf{0} & 0 & \textbf{16} & 0 \\ \hline
+    \end{tabular}
+    \caption*{Stringa in ingresso con \m{K = 5} parole (in \textbf{grassetto})}
+    
+    \begin{tabular}{|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|}
+        \hline
+        \textbf{120} & \textit{31} & \textbf{10} & \textit{31} & \textbf{\textit{10}} & \textit{30} & \textbf{\textit{10}} & \textit{29} & \textbf{16} & \textit{31} \\ \hline
+    \end{tabular}
+    \caption*{Stringa processata (in \textit{corsivo} le modifiche)}
+\end{table}
+
+\textcolor{red}{Da completare con un esempio in grande}
+
+\section{Architettura}
+\subsection{Interfaccia e funzionamento}
+
+Il modulo ha la seguente interfaccia:
+\begin{itemize}
+    \item tre segnali principali
+    \begin{itemize}
+        \item \m{i\_start}: 1 bit, segnale di inizio elaborazione;
+        \item \m{i\_add}: 16 bit, indirizzo della memoria da cui inizia la porzione da processare;
+        \item \m{i\_k}: 10 bit, numero di parole da elaborare;
+    \end{itemize}
+    \item due ingressi ausiliari
+    \begin{itemize}
+        \item \m{i\_clk}: 1 bit, segnale di clock unico per tutto il sistema;
+        \item \m{i\_rst}: 1 bit, segnale di reset asincrono;
+    \end{itemize}
+    \item un'uscita principale
+    \begin{itemize}
+        \item \m{o\_done}: 1 bit, segnale di terminata elaborazione;
+    \end{itemize}
+    \item cinque connessioni con la memoria
+    \begin{itemize}
+        \item \m{i\_mem\_data}: 8 bit, contenuto in ingresso dalla memoria quando letta;
+        \item \m{o\_mem\_en}: 1 bit, segnale di \textit{enable}, deve essere 1 per comunicare con la memoria;
+        \item \m{o\_mem\_we}: 1 bit, segnale di \textit{write enable}, deve essere 1 per scrivere, 0 per leggere;
+        \item \m{o\_mem\_addr}: 16 bit, indirizzo della memoria da cui leggere o in cui scrivere;
+        \item \m{o\_mem\_data}: 8 bit, dato che verrà scritto in memoria;
+    \end{itemize}
+\end{itemize}
+Tutti i segnali sono sincroni e devono essere interpretati sul fronte di salita del clock; fa eccezione il segnale di reset che è asincrono.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.45]{resources/export_project.png}
+    \caption*{Diagramma del componente}
+\end{figure}
+
+
+\section{Risultati sperimentali}
+
+\vspace{0.2em}\subsection{Report di sintesi}
+
+\vspace{0.3em}\hspace{1em} Dopo aver sintetizzato il design del progetto, il circuito è stato simulato utilizzando il test bench fornito. Il circuito si comporta correttamente, superando il test sia con la simulazione comportamentale (behavioral simulation) che con la simulazione post-sintesi (post-synthesis simulation). Di seguito, sono riportate le tabelle con il timing report e l'utilizzo delle risorse. Nella \textcolor{red}{Testo mancante}\autoref{tab:timing_report} 
+è mostrato il timing report del design; analizzandolo, si può notare che il Worst Negative Slack (WNS) è di 15,413 ns. Un WNS di 15,413 ns con un periodo di clock di 20 ns indica che il circuito impiega (20 ns - 15,413 ns = 4,587 ns) per completare l'esecuzione di uno stato della FSM del design, dato che la FSM è stata sincronizzata in modo da eseguire uno stato per ogni ciclo di clock, come è possibile notare dalla \textcolor{red}{Testo mancante}
+\autoref{fig:state_clk_sync}.
+
+\vspace{1em}
+\begin{table}[h]
+    \centering
+    \resizebox{\textwidth}{!}{
+        \begin{tabular}{lll}
+            \toprule
+            \textbf{Setup}                        & \textbf{Hold}                    & \textbf{Pulse Width}                              \\
+            \midrule
+            Worst Negative Slack (WNS): 15,413 ns & Worst Hold Slack (WHS): 0,148 ns & Worst Pulse Width Slack (WPWS): 9,500 ns          \\
+            \addlinespace
+            Total Negative Slack (TNS): 0,000 ns  & Total Hold Slack (THS): 0,000 ns & Total Pulse Width Negative Slack (TPWS): 0,000 ns \\
+            \addlinespace
+            Number of Failing Endpoints: 0        & Number of Failing Endpoints: 0   & Number of Failing Endpoints: 0                    \\
+            \addlinespace
+            Total Number of Endpoints: 119        & Total Number of Endpoints: 119   & Total Number of Endpoints: 79                     \\
+            \bottomrule
+        \end{tabular}
+    }
+    \caption{Design Timing Summary}
+    \label{tab:timing_report}
+\end{table}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{resources/state_clk_sync.png}
+    \caption{sincronizzazione della FSM con il clock}
+    \label{fig:state_clk_sync}
+\end{figure}
+\vspace{1em}\noindent Da questo valore è anche possibile calcolare il periodo di clock minimo che il design può supportare. Sapendo che la memoria (RAM) ha un ritardo massimo di 2 ns nelle operazioni di scrittura e lettura, il periodo di clock minimo è dato da:
+
+\begin{equation}
+    T_{clk} = 20 ns + 2 ns - 15,413 ns = 6,587 ns
+\end{equation}
+
+\noindent e la frequenza di clock massima supportata dal design è:
+
+\begin{equation}
+    f_{clk} = \frac{1}{T_{clk}} = \frac{1}{6,587 ns} \approx 151,8 MHz
+\end{equation}
+
+\vspace{1em}\noindent Dalla \autoref{tab:utilization_report} si può invece osservare come il design utilizzi 78 registri di tipo Flip-Flop e 86 LUTs, il che significa che il design non presenta alcun tipo di Latch. Questo evita comportamenti imprevedibili e indesiderati, assicurando inoltre che il design sia completamente sincrono. Per evitare la creazione di Latch e sincronizzare correttamente il design con il periodo di clock, è stato necessario implementare la FSM in un singolo processo invece di dividerla in più processi.
+
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{lrrrr}
+        \toprule
+        \textbf{Site Type}          & \textbf{Used} & \textbf{Fixed} & \textbf{Available} & \textbf{Util\%} \\
+        \midrule
+        Slice LUTs*                 & 86            & 0              & 134600             & 0,06            \\
+        \addlinespace
+        \quad LUT as Logic          & 86            & 0              & 134600             & 0,06            \\
+        \addlinespace
+        \quad LUT as Memory         & 0             & 0              & 46200              & 0,00            \\
+        \midrule
+        Slice Registers             & 78            & 0              & 269200             & 0,03            \\
+        \addlinespace
+        \quad Register as Flip Flop & 78            & 0              & 269200             & 0,03            \\
+        \addlinespace
+        \quad Register as Latch     & 0             & 0              & 269200             & 0,00            \\
+        \midrule
+        F7 Muxes                    & 0             & 0              & 67300              & 0,00            \\
+        \addlinespace
+        F8 Muxes                    & 0             & 0              & 33650              & 0,00            \\
+        \bottomrule
+    \end{tabular}
+    \caption{Resource Utilization Summary}
+    \label{tab:utilization_report}
+\end{table}
+\newpage
+
+\subsection{Simulazioni}
+
+\hspace{1em} Per assicurarsi che il design fosse corretto e privo di errori, sono stati simulati vari test bench con l'obiettivo di verificare diversi corner cases. Inoltre, è stato sviluppato un codice in Python per generare automaticamente una serie di test bench, inizializzando la RAM con messaggi composti da $K \in [1, 100]$ parole e assegnando a ciascuna parola un valore $W \in [0, 255]$, come da specifica. I test bench generati da Python sono stati successivamente simulati con GHDL, uno strumento utilizzato per la simulazione e verifica dei design VHDL.
+
+\subsubsection{Tesh bench fornito}
+
+In questo test bench viene illustrato il funzionamento del design con una sequenza definita come 'normale', in cui viene mostrato il corretto utilizzo di tutti i segnali per interfacciarsi con la RAM. Nella \autoref{fig:start_signal} e nella \autoref{fig:end_signal} è possibile osservare i segnali di inizio e fine elaborazione, che vengono attivati correttamente durante l'esecuzione del design. In particolare, il segnale di inizio elaborazione (i\_start), attivato una volta che il segnale di reset (i\_rst) è disattivato, avvia correttamente l'elaborazione del design, come si può notare dal cambiamento degli stati; in dettaglio, la FSM passa da WAIT\_STATE a INIT\_STATE, procedendo con la lettura della RAM. Una volta che il design ha terminato l'elaborazione della sequenza, il segnale di terminazione dell'elaborazione (o\_done) viene attivato e, infine, il segnale i\_start viene disattivato, rendendo il design pronto per una nuova elaborazione.
+
+\vspace{0.5em}
+
+\begin{figure}[htbp]
+    \centering
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[height=4.7cm]{resources/start_signal.png}
+        \caption{Segnali di inizio elaborazione}
+        \label{fig:start_signal}
+    \end{minipage}\hfill
+    \begin{minipage}{0.5\textwidth}
+        \centering
+        \includegraphics[height=4.7cm]{resources/end_signal.png}
+        \caption{Segnali di fine elaborazione}
+        \label{fig:end_signal}
+    \end{minipage}
+    \label{fig:normal_sequence}
+\end{figure}
+
+\subsubsection{Sequenza di lunghezza nulla}
+
+In questo test bench viene illustrato il comportamento del design quando la sequenza è vuota, ovvero quando il segnale che indica la lunghezza della sequenza (i\_k) è pari a 0. Come mostrato nella \autoref{fig:empty_sequence}, il design avvia correttamente l'elaborazione non appena il segnale di reset viene disattivato e quello di start attivato. Tuttavia, appena rileva che k = 0 leggendo dalla RAM, il design conclude immediatamente l'elaborazione, attivando il segnale o\_done, che viene poi disattivato quando i\_start è disattivato. La FSM, una volta attivato i\_start, passa da WAIT\_STATE a INIT\_STATE; da quest'ultimo stato, procede a DONE\_STATE se k = 0, altrimenti passa a WAIT\_FOR\_MEM\_STATE, come si può osservare nella figura.
+
+\vspace{0.5em}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{resources/empty_sequence.png}
+    \caption{Sequenza di lunghezza nulla}
+    \label{fig:empty_sequence}
+\end{figure}
+\subsubsection{Credibilità che raggiunge 0}
+
+Questo test bench illustra il comportamento del design quando la credibilità viene decrementata ogni volta che si incontra uno zero in $W$, finché non si rileva un valore diverso da 0, momento in cui la credibilità viene reinizializzata a 31 per poi essere nuovamente decrementata se si incontra un altro zero. Secondo la specifica, una volta che la credibilità raggiunge 0, il design deve mantenere tale valore fino a che non si rileva un valore in $W$ diverso da 0 o fino al termine della sequenza. Come previsto, alla fine della sequenza, il design deve attivare il segnale di fine elaborazione. Nella \autoref{fig:cred_0_start} e nella \autoref{fig:cred_0_end} è possibile osservare come il design si comporti correttamente, continuando a decrementare la credibilità fino a 0 e mantenendola a 0, dato che non si verificano valori diversi da 0 in $W$.
+
+\vspace{0.5em}
+\begin{figure}[htbp]
+    \centering
+    \begin{minipage}{0.65\textwidth}
+        \centering
+        \includegraphics[height=4.5cm]{resources/cred_0_start.png}
+        \caption{Segnali di inizio elaborazione}
+        \label{fig:cred_0_start}
+    \end{minipage}\hfill
+    \begin{minipage}{0.35\textwidth}
+        \centering
+        \includegraphics[height=4.5cm]{resources/cred_0_end.png}
+        \caption{Segnali di fine elaborazione}
+        \label{fig:cred_0_end}
+    \end{minipage}
+    \label{fig:cred_0_sequence}
+\end{figure}
+\subsubsection{Test bench con sequenza nulla iniziale}
+
+In questo test bench si è voluto verificare il funzionamento del design quando la sequenza di parole $W$ inizia con un valore pari a 0. In questo scenario, il design deve avviare l'elaborazione della sequenza mantenendo il valore $W$ nullo e impostando e mantenendo la credibilità a 0, fino a quando non si legge dalla RAM un valore di $W$ diverso da 0. A quel punto, il design si comporta come mostrato nei test bench precedenti. Nella \autoref{fig:value_0_start} e nella \autoref{fig:value_0_mid} si verifica che il design opera in modo appropriato: in particolare, si può notare come sia la credibilità che il valore di $W$ rimangano a 0. Questo è evidenziato anche dal segnale o\_mem\_data (segnale che indica il valore da scrivere nella RAM all'indirizzo o\_mem\_addr), che resta a 0 fino a quando non viene letto dalla RAM un valore diverso da 0; nel caso del test bench, questo valore è 2 e la credibilità viene poi posta a 31.
+
+\vspace{0.5em}
+\begin{figure}[htbp]
+    \centering
+    \begin{minipage}{0.53\textwidth}
+        \centering
+        \includegraphics[height=4.3cm]{resources/value_0_start.png}
+        \caption{Segnali di inizio elaborazione}
+        \label{fig:value_0_start}
+    \end{minipage}\hfill
+    \begin{minipage}{0.47\textwidth}
+        \centering
+        \includegraphics[height=4.3cm]{resources/value_0_mid.png}
+        \caption{Fine elaborazione di una sequenza di 0}
+        \label{fig:value_0_mid}
+    \end{minipage}
+    \label{fig:value_0_sequence}
+\end{figure}
+\subsubsection{Sequenze multiple}
+
+In questo test bench si verifica come il design si comporta nell'elaborazione di sequenze multiple. Dalla specifica, il design, una volta completata l'elaborazione della prima sequenza, deve attivare il segnale di fine elaborazione (o\_done). Quando o\_done viene attivato, il segnale i\_start viene disattivato, seguito dalla disattivazione del segnale di fine elaborazione, il che indica che il modulo è pronto per una nuova elaborazione. Quando i\_start viene attivato una seconda volta, il modulo avvia la seconda elaborazione. Secondo la specifica, la seconda elaborazione non deve attendere il reset del modulo; questo è verificabile osservando come il modulo, una volta terminata l'elaborazione, passi da DONE\_STATE a WAIT\_STATE, e successivamente, con la riattivazione di i\_start, la FSM passi da WAIT\_STATE a INIT\_STATE, procedendo con l'elaborazione della nuova sequenza.
+
+\vspace{0.5em}
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{resources/multiple_sequence.png}
+    \caption{Sequenze multiple}
+    \label{fig:multiple_sequences}
+\end{figure}
+\subsubsection{Segnale di reset}
+
+In questo test bench si verifica il corretto funzionamento del design a fronte del segnale di reset asincrono.
+
+\vspace{0.5em}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{resources/reset.png}
+    \caption{Segnale di reset}
+    \label{fig:reset}
+\end{figure}
+
+\newpage
+
+\subsubsection{Segnale di start nello stato di reset}
+
+\subsubsection{Altri test bench}
+
+\section{Conclusioni}
+\end{document}

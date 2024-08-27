@@ -15,5 +15,10 @@ e~project*
 work-*
 /build
 /thesis/*
+!/thesis/Configuration_files
+!/thesis/Images
+!/thesis/resources
+!/thesis/thesis.tex
+!/thesis/thesis.pdf
 !/thesis/*thesis_plain.pdf
 !/thesis/*thesis_plain.tex
