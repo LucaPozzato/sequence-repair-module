@@ -7,13 +7,13 @@
 
 % Custom theorem environments
 \declaretheoremstyle[
-  headfont=\color{bluePoli}\normalfont\bfseries,
-  bodyfont=\color{black}\normalfont\itshape,
+	headfont=\color{bluePoli}\normalfont\bfseries,
+	bodyfont=\color{black}\normalfont\itshape,
 ]{colored}
 
 \captionsetup[figure]{labelfont={color=bluePoli}} % Set colour of the captions
 \captionsetup[table]{labelfont={color=bluePoli}} % Set colour of the captions
-\captionsetup[algorithm]{labelfont={color=bluePoli}} % Set colour of the captions
+% \captionsetup[algorithm]{labelfont={color=bluePoli}} % Set colour of the captions
 
 \theoremstyle{colored}
 \newtheorem{theorem}{Theorem}[section]
@@ -27,12 +27,12 @@
 \newcounter{algsubstate}
 \renewcommand{\thealgsubstate}{\alph{algsubstate}}
 \newenvironment{algsubstates}{
-    \setcounter{algsubstate}{0}%
-    \renewcommand{\STATE}{%
-    \stepcounter{algsubstate}%
-    \Statex {\small\thealgsubstate:}\space}
-    }{}
-    
+	\setcounter{algsubstate}{0}%
+	\renewcommand{\STATE}{%
+		\stepcounter{algsubstate}%
+		\Statex {\small\thealgsubstate:}\space}
+}{}
+
 % Custom theorem environment
 \newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
 \newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
@@ -47,13 +47,13 @@
 % Create command for background pic
 \newcommand\BackgroundPic{% Adding background picture
 	\put(237,365){
-	    \parbox[b][\paperheight]{\paperwidth}{%
-	    \vfill
-		\centering
-		\transparent{0.4}
-		\includegraphics[width=0.44\paperwidth]{raggiera_polimi.eps}%
-		\vfill}
-		}
+		\parbox[b][\paperheight]{\paperwidth}{%
+			\vfill
+			\centering
+			\transparent{0.4}
+			\includegraphics[width=0.44\paperwidth]{raggiera_polimi.eps}%
+			\vfill}
+	}
 }
 
 % Set indentation
@@ -75,7 +75,7 @@
 % Custom headers and footers
 \pagestyle{fancy}
 \fancyhf{}
-      
+
 \fancyfoot{}
 \fancyfoot[C]{\thepage} % page
 \renewcommand{\headrulewidth}{0mm} % headrule width

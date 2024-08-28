@@ -1,6 +1,5 @@
 */**/.DS_Store
 .DS_Store
-# .gitignore
 /test/generated_tb
 __pycache__
 .venv
@@ -10,7 +9,6 @@ wave.vcd
 results.xml
 project_reti_logiche
 e~project_reti_logiche.o
-# design*
 e~project*
 work-*
 /build
@@ -20,5 +18,3 @@ work-*
 !/thesis/resources
 !/thesis/thesis.tex
 !/thesis/thesis.pdf
-!/thesis/*thesis_plain.pdf
-!/thesis/*thesis_plain.tex
