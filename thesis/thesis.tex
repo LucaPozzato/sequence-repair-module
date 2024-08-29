@@ -17,7 +17,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[italian]{babel}
 \usepackage[T1]{fontenc} % Font encoding
-\usepackage{FiraMono}
+%\usepackage{FiraMono}
 \usepackage{inconsolata}
 
 % PACKAGES FOR IMAGES
@@ -71,8 +71,9 @@
 \newcommand{\e}[1]{\times 10^{#1}}  % Powers of 10 notation
 \newcommand{\mathbbm}[1]{\text{\usefont{U}{bbm}{m}{n}#1}} % From mathbbm.sty
 \newcommand{\pdev}[2]{\frac{\partial#1}{\partial#2}}
-\newcommand{\m}[1]{{\scriptsize\fontfamily{fvm}\selectfont #1}}
-\newcommand{\inc}[1]{{\fontfamily{zi4}\selectfont #1}}
+%\newcommand{\m}[1]{{\fontfamily{fvm}\selectfont #1}}
+\newcommand{\m}[1]{{\fontfamily{zi4}\selectfont #1}}
+
 % NB: you can also override some existing commands with the keyword \renewcommand
 
 %----------------------------------------------------------------------------
@@ -123,24 +124,38 @@
 % This file creates the Title Page of the document
 \input{Configuration_files/title_page}
 
+\tableofcontents
+%\listoffigures
+%\listoftables
+\newpage
+
 \section{Introduzione}
 \subsection{Specifiche}
-Il componente riceve in ingresso una sequenza di \m{K} parole \m{W} il cui valore è compreso tra 0 e 255, dove il valore zero va interpretato come \textit{"valore non specificato"}. Le parole sono memorizzate a partire da un indirizzo \m{ADD} ogni due byte (e.g. \m{ADD, ADD+2... ADD+2*(K-1)}).
-Il byte mancante (agli indirizzi \m{ADD+1, ADD+3..., ADD+2(K-1)+1}) dovrà essere completato con il valore di \textit{credibilità} \m{C} della relativa parola \m{W}: essa può assumere valori tra 31 e 0, è pari a 31 ogni volta che il valore \m{W} è \textit{valido} (diverso da zero) mentre viene decrementato rispetto al valore precedente nel caso in cui si incontri uno zero in \m{W}.\\
+Il componente hardware da descrivere è connesso ad una memoria e riceve input dall'esterno; in particolare viene fornito un indirizzo della memoria \m{ADD}, il numero di parole da analizzare \m{K} ed un segnale di avvio \m{START}. Quando il modulo riceve il via, analizza la stringa formata dalle prime \m{K} parole presenti in memoria all'indirizzo \m{ADD} come viene descritto ora.
+
+\vspace{1em}
+
+La sequenza da processare è costituita da \m{K} parole \m{W} il cui valore è compreso tra $0$ e $255$, dove il valore zero va interpretato come \textit{"valore non specificato"}. Le parole sono memorizzate a partire da un indirizzo \m{ADD} ogni due byte (e.g. \m{ADD, ADD+2... ADD+2*(K-1)}).
+Il byte mancante (agli indirizzi \m{ADD+1, ADD+3..., ADD+2(K-1)+1}) dovrà essere completato con il valore di \textit{credibilità} \m{C} della relativa parola \m{W}. Essa può assumere valori tra $31$ e $0$: è pari a $31$ ogni volta che il valore \m{W} è \textit{valido} (diverso da zero) mentre viene decrementato rispetto al valore precedente nel caso in cui si incontri uno zero in \m{W}.
+
 L'obiettivo del componente è processare la stringa e modificarla come segue:
 \begin{itemize}
     \item[-] sostituire le parole con valore 0 con l'ultimo valore \textit{valido}, cioè l'ultimo valore della sequenza letto diverso da zero;
     \item[-] completare per ogni parola il byte mancante con il suo valore di \textit{credibilità} \m{C}.
 \end{itemize}
 
-Un esempio di sequenza in ingresso è ad esempio (con valori in decimale):
+\subsection{Esempio}
+
+Qui sotto è mostrato un esempio di una stringa prima e dopo l'elaborazione del componente. I numeri sono mostrati in formato decimale per semplicità di lettura.
+
+\vspace{0.5em}
 \begin{table}[ht]
     \centering
     \begin{tabular}{|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|>{\centering\arraybackslash}m{1cm}|}
         \hline
         \textbf{120} & 0 & \textbf{10} & 0 & \textbf{0} & 0 & \textbf{0} & 0 & \textbf{16} & 0 \\ \hline
     \end{tabular}
-    \caption*{Stringa in ingresso con \m{K = 5} parole (in \textbf{grassetto})}
+    \caption*{Stringa in ingresso con \m{K} $= 5$ parole (in \textbf{grassetto})}
 
     \vspace{1em}
 
@@ -151,51 +166,137 @@ Un esempio di sequenza in ingresso è ad esempio (con valori in decimale):
     \caption*{Stringa processata (in \textit{corsivo} le modifiche)}
 \end{table}
 
-\textcolor{red}{Da completare con un esempio in grande}
+Come è possibile vedere, nelle parole successive ai valori $120$, $10$ e $16$ è stata assegnata credibilità $31$, nelle parole con valore $0$ è stato assegnato l'ultimo valore letto valido ($10$) e la credibilità di queste parole è stata decrementata prima a $30$, poi a $29$.
 
 \section{Architettura}
-\subsection{Interfaccia e funzionamento}
+\subsection{Interfaccia}
 
-Il modulo ha la seguente interfaccia:
-\begin{itemize}
-    \item tre segnali principali
-          \begin{itemize}
-              \item \m{i\_start}: 1 bit, segnale di inizio elaborazione;
-              \item \m{i\_add}: 16 bit, indirizzo della memoria da cui inizia la porzione da processare;
-              \item \m{i\_k}: 10 bit, numero di parole da elaborare;
-          \end{itemize}
-    \item due ingressi ausiliari
-          \begin{itemize}
-              \item \m{i\_clk}: 1 bit, segnale di clock unico per tutto il sistema;
-              \item \m{i\_rst}: 1 bit, segnale di reset asincrono;
-          \end{itemize}
-    \item un'uscita principale
-          \begin{itemize}
-              \item \m{o\_done}: 1 bit, segnale di terminata elaborazione;
-          \end{itemize}
-    \item cinque connessioni con la memoria
-          \begin{itemize}
-              \item \m{i\_mem\_data}: 8 bit, contenuto in ingresso dalla memoria quando letta;
-              \item \m{o\_mem\_en}: 1 bit, segnale di \textit{enable}, deve essere 1 per comunicare con la memoria;
-              \item \m{o\_mem\_we}: 1 bit, segnale di \textit{write enable}, deve essere 1 per scrivere, 0 per leggere;
-              \item \m{o\_mem\_addr}: 16 bit, indirizzo della memoria da cui leggere o in cui scrivere;
-              \item \m{o\_mem\_data}: 8 bit, dato che verrà scritto in memoria;
-          \end{itemize}
-\end{itemize}
+Il modulo ha interfaccia come mostrato nella \autoref{fig:entity}. Di seguito la descrizione delle varie porte nella \autoref{tab:ports}.
+
 Tutti i segnali sono sincroni e devono essere interpretati sul fronte di salita del clock; fa eccezione il segnale di reset che è asincrono.
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=.45]{resources/export_project.png}
-    \caption*{Diagramma del componente}
+    \includegraphics[scale=.45]{resources/entity.png}
+    \caption{Diagramma del componente}
+    \label{fig:entity}
 \end{figure}
 
+\begin{table}[h]
+    \centering
+    \resizebox{\textwidth}{!}{
+        \begin{tabular}{lrl}
+            \toprule
+            \textbf{Nome Porta} & \textbf{Tipo} & \textbf{Descrizione} \\
+            \toprule
+            \multicolumn{3}{l}{\textbf{Ingressi Principali}} \\
+            \midrule
+            \m{i\_start} & 1 bit & Segnale di inizio elaborazione \\
+            \addlinespace
+            \m{i\_add} & 16 bit & Indirizzo della memoria da cui inizia la porzione da processare \\
+            \addlinespace
+            \m{i\_k} & 10 bit & Numero di parole da elaborare \\
+            \toprule
+            \multicolumn{3}{l}{\textbf{Ingressi Ausiliari}} \\
+            \midrule
+            \m{i\_clk} & 1 bit & Segnale di clock unico per tutto il sistema \\
+            \addlinespace
+            \m{i\_rst} & 1 bit & Segnale di reset asincrono \\
+            \toprule
+            \multicolumn{3}{l}{\textbf{Uscita Principale}} \\
+            \midrule
+            \m{o\_done} & 1 bit & Segnale di terminata elaborazione \\
+            \toprule
+            \multicolumn{3}{l}{\textbf{Connessioni con la Memoria}} \\
+            \midrule
+            \m{i\_mem\_data} & 8 bit & Contenuto in ingresso dalla memoria quando letta \\
+            \addlinespace
+            \m{o\_mem\_en} & 1 bit & Segnale di \textit{enable}, deve essere 1 per comunicare con la memoria \\
+            \addlinespace
+            \m{o\_mem\_we} & 1 bit & Segnale di \textit{write enable}, deve essere 1 per scrivere, 0 per leggere \\
+            \addlinespace
+            \m{o\_mem\_addr} & 16 bit & Indirizzo della memoria da cui leggere o in cui scrivere \\
+            \addlinespace
+            \m{o\_mem\_data} & 8 bit & Dato che verrà scritto in memoria \\
+            \bottomrule
+        \end{tabular}
+    }
+    \caption{Descrizione delle porte di interfaccia}
+    \label{tab:ports}
+\end{table}
 \newpage
+
+\subsection{Processi}
+Il modulo è composto da un unico processo \textit{design}, con elementi della lista di sensibilità i segnali \m{i\_clk} ed \m{i\_rst}.
+
+La \textit{FSM} (macchina a stati) è sincronizzata in modo da computare uno stato ad ogni ciclo di clock, mentre, essendo il reset asincrono, è presente nella lista di sensibilità in modo da far terminare l'elaborazione nel momento in cui si verifica un fronte di salita del segnale stesso.
+
+Abbiamo scelto di implementare l'intero componente attraverso un unico processo invece di dividerlo in tre sottoprocessi - cambio di stato, \textit{lambda} (funzione di stato prossimo), \textit{delta} (funzione di uscita) - in quanto la bassa complessità dell'elaborazione rispetto ai tempi disponibili permettevano la costruzione di codice più semplice e leggibile, evitando problemi di sincronizzazione o creazione di latch non desiderati.
+
+\subsection{Segnali}
+Nella \autoref{tab:signals} vengono presentati i segnali utilizzati all'interno del modulo. 
+\begin{table}[h]
+    \centering
+    \resizebox{\textwidth}{!}{
+        \begin{tabular}{lrl}
+            \toprule
+            \textbf{Nome Segnale} & \textbf{Tipo} & \textbf{Descrizione} \\
+            \midrule
+            \m{k} & 10 bit & Numero di parole rimanenti da elaborare \\
+            \addlinespace
+            \m{addr} & 16 bit & Indirizzo da cui leggere o in cui scrivere il prossimo dato \\
+            \addlinespace
+            \m{data} & 8 bit & Contenuto dell'ultimo valore di parola \m{W} valido \\
+            \addlinespace
+            \m{cred} & 8 bit & Credibilità \m{C} da assegnare  alla parola corrente \\
+            \addlinespace
+            \m{current\_state} & \m{state\_type} & Stato corrente dell'elaborazione \\
+            \bottomrule
+        \end{tabular}
+    }
+    \caption{Segnali interni}
+    \label{tab:signals}
+\end{table}
+
+\subsection{Macchina a stati}
+Il funzionamento del componente è sintetizzato nella macchina a stati rappresentata in \autoref{fig:fsm}. La descrizione di ogni stato è approfondito nella \autoref{tab:fsm}.
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=.65]{resources/fsm.png}
+    \caption{Macchina a stati}
+    \label{fig:fsm}
+\end{figure}
+\begin{longtable}{l p{0.75\textwidth}}
+        \toprule
+        \textbf{Stato} & \textbf{Descrizione} \\
+        \midrule
+        \m{RST\_STATE} & Stato di reset, accedibile da ogni stato quando \m{i\_rst} $= 1$; quando \m{i\_rst}$=0$ si passa a \m{WAIT\_STATE} \\
+        \addlinespace
+        \m{WAIT\_STATE} & Stato di attesa di una nuova elaborazione; quando \m{i\_start} $= 1$ vengono inizializzati i segnali \m{k} e \m{addr} con i rispettivi segnali in ingresso, mentre a \m{cred} viene assegnato il valore $31$, infine si passa a \m{INIT\_STATE}\\
+        \addlinespace
+        \m{INIT\_STATE} & Stato di inizio elaborazione; se \m{k} $\neq 0$ viene attivato il collegamento con la memoria imponendo \m{o\_mem\_en} $=1$ e si passa a \m{WAIT\_FOR\_MEM\_STATE}, altrimenti si impone \m{o\_done} $=1$ e si passa a \m{DONE\_STATE}\\
+        \addlinespace
+        \m{WAIT\_FOR\_MEM\_STATE} & Stato di attesa di attivazione della memoria, si passa a \m{WAIT\_FOR\_MEM\_STATE\_2}\\
+        \addlinespace
+        \m{WAIT\_FOR\_MEM\_STATE\_2} & Stato di attesa di ricezione del contenuto della memoria, necessario a causa del ritardo di $2\ ns$ introdotto dalla memoria tra la ricezione della richiesta di dati e l'invio degli stessi; si passa a \m{READ\_STATE}\\
+        \addlinespace
+        \m{READ\_STATE} & Stato di lettura del contenuto della memoria e decisione dei valori in uscita verso la memoria; se è un valore non valido si mantiene in \m{data} l'ultimo valore valido e si decrementa \m{cred}, altrimenti si impone il valore corrente a \m{data} e si resetta \m{cred}$= 31$. Viene attivata la scrittura in memoria imponendo \m{o\_mem\_we} $= 1$ e si passa a \m{WRITE\_MEM\_STATE}\\
+        \addlinespace
+        \m{WRITE\_MEM\_STATE} & Stato di scrittura del dato in memoria, in cui viene scritto il valore presente nel segnale \m{data}, viene aggiornato il segnale \m{addr} ad \m{addr} $+ 1$ e si passa a \m{WRITE\_CRED\_STATE}\\
+        \addlinespace
+        \m{WRITE\_CRED\_STATE} & Stato di scrittura della credibilità in memoria, in cui viene scritto il valore presente nel segnale \m{cred},viene aggiornato il segnale \m{addr} ad \m{addr} $+ 1$ e si passa a \m{INIT\_STATE}\\
+        \addlinespace
+        \m{DONE\_STATE} & Stato di terminazione dell'elaborazione, quando \m{i\_start} viene posto a zero si passa in \m{WAIT\_STATE} ed il componente è pronto ad una nuova elaborazione \\
+        \bottomrule
+    \caption{Stati della \textit{FSM}}
+    \label{tab:fsm}
+\end{longtable}
+
+In ogni stato vengono imposti i valori desiderati ai segnali che saranno utilizzati nello stato successivo: infatti tutti i segnali vengono aggiornati sul fronte di salita del clock, il quale coincide con il cambio di stato. Ad esempio per far sì che durante lo stato di \m{WRITE\_MEM\_STATE} venga scritto il dato in memoria è necessario imporre \m{o\_mem\_we} $= 1$ nello stato di \m{READ\_STATE}, in modo che al successivo fronte di salita del clock (quindi al conseguente passaggio di stato) il segnale venga imposto ad uno.
 
 \section{Risultati sperimentali}
 
-\vspace{0.2em}\subsection{Report di sintesi}
-
-\vspace{0.3em}\hspace{1em} Dopo aver sintetizzato il design del progetto, il circuito è stato simulato utilizzando il test bench fornito. Il circuito si comporta correttamente, superando il test sia con la simulazione comportamentale (behavioral simulation) che con la simulazione post-sintesi (post-synthesis simulation). Di seguito, sono riportate le tabelle con il timing report e l'utilizzo delle risorse. Nella \autoref{tab:timing_report} è mostrato il timing report del design; analizzandolo, si può notare che il Worst Negative Slack (WNS) è di 15,413 ns. Un WNS di 15,413 ns con un periodo di clock di 20 ns indica che il circuito impiega (20 ns - 15,413 ns = 4,587 ns) per completare l'esecuzione di uno stato della FSM del design, dato che la FSM è stata sincronizzata in modo da eseguire uno stato per ogni ciclo di clock, come è possibile notare dalla \autoref{fig:state_clk_sync}.
+\subsection{Report di sintesi}
+Dopo aver sintetizzato il design del progetto, il circuito è stato simulato utilizzando il test bench fornito. Il circuito si comporta correttamente, superando il test sia con la simulazione comportamentale (\textit{behavioral simulation}) che con la simulazione post-sintesi (\textit{post-synthesis simulation}). Di seguito, sono riportate le tabelle con il timing report e l'utilizzo delle risorse. Nella \autoref{tab:timing_report} è mostrato il timing report del design; analizzandolo, si può notare che il Worst Negative Slack (\textit{WNS}) è di 15,413 ns. Un WNS di 15,413 ns con un periodo di clock di 20 ns indica che il circuito impiega (20 ns - 15,413 ns = 4,587 ns) per completare l'esecuzione di uno stato della FSM del design, dato che la FSM è stata sincronizzata in modo da eseguire uno stato per ogni ciclo di clock, come è possibile notare dalla \autoref{fig:state_clk_sync}.
 
 \vspace{1em}
 
@@ -222,22 +323,24 @@ Tutti i segnali sono sincroni e devono essere interpretati sul fronte di salita 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\textwidth]{resources/state_clk_sync.png}
-    \caption{sincronizzazione della FSM con il clock}
+    \caption{Sincronizzazione della FSM con il clock}
     \label{fig:state_clk_sync}
 \end{figure}
-\vspace{1em}\noindent Da questo valore è anche possibile calcolare il periodo di clock minimo che il design può supportare. Sapendo che la memoria (RAM) ha un ritardo massimo di 2 ns nelle operazioni di scrittura e lettura, il periodo di clock minimo è dato da:
+\vspace{1em}
+Da questo valore è anche possibile calcolare il periodo di clock minimo che il design può supportare. Sapendo che la memoria (RAM) ha un ritardo massimo di 2 ns nelle operazioni di scrittura e lettura, il periodo di clock minimo è dato da:
 
 \begin{equation}
-    T_{clk} = 20 ns + 2 ns - 15,413 ns = 6,587 ns
+    T_{clk} = 20\ ns + 2\ ns - 15,413\ ns = 6,587\ ns
 \end{equation}
 
-\noindent e la frequenza di clock massima supportata dal design è:
+e la frequenza di clock massima supportata dal design è:
 
 \begin{equation}
-    f_{clk} = \frac{1}{T_{clk}} = \frac{1}{6,587 ns} \approx 151,8 MHz
+    f_{clk} = \frac{1}{T_{clk}} = \frac{1}{6,587\ ns} \approx 151,8\ MHz
 \end{equation}
 
-\vspace{1em}\noindent Dalla \autoref{tab:utilization_report} si può invece osservare come il design utilizzi 78 registri di tipo Flip-Flop e 86 LUTs, il che significa che il design non presenta alcun tipo di Latch. Questo evita comportamenti imprevedibili e indesiderati, assicurando inoltre che il design sia completamente sincrono. Per evitare la creazione di Latch e sincronizzare correttamente il design con il periodo di clock, è stato necessario implementare la FSM in un singolo processo invece di dividerla in più processi.
+\vspace{1em}
+Dalla \autoref{tab:utilization_report} si può invece osservare come il design utilizzi 78 registri di tipo \textit{Flip-Flop} e 86 \textit{LUTs}, il che significa che il design non presenta alcun tipo di \textit{Latch}. Questo evita comportamenti imprevedibili e indesiderati, assicurando inoltre che il design sia completamente sincrono. Per evitare la creazione di Latch e sincronizzare correttamente il design con il periodo di clock, è stato necessario implementare la FSM in un singolo processo invece di dividerla in più processi.
 
 \begin{table}[ht]
     \centering
@@ -265,15 +368,12 @@ Tutti i segnali sono sincroni e devono essere interpretati sul fronte di salita 
     \caption{Resource Utilization Summary}
     \label{tab:utilization_report}
 \end{table}
-\newpage
 
 \subsection{Simulazioni}
-
-\hspace{1em} Per assicurarsi che il design fosse corretto e privo di errori, sono stati simulati vari test bench con l'obiettivo di verificare diversi corner cases. Inoltre, è stato sviluppato un codice in Python per generare automaticamente una serie di test bench, inizializzando la RAM con messaggi composti da \m{K} $\in [1, 100]$ parole e assegnando a ciascuna parola un valore \m{W} $\in [0, 255]$, come da specifica. I test bench generati da Python sono stati successivamente simulati con GHDL, uno strumento utilizzato per la simulazione e verifica dei design VHDL.
+Per assicurarsi che il design fosse corretto e privo di errori, sono stati simulati vari test bench con l'obiettivo di verificare diversi corner cases. Inoltre, è stato sviluppato un codice in Python per generare automaticamente una serie di test bench, inizializzando la RAM con messaggi composti da \m{K} $\in [1, 100]$ parole e assegnando a ciascuna parola un valore \m{W} $\in [0, 255]$, come da specifica. I test bench generati da Python sono stati successivamente simulati con GHDL, uno strumento utilizzato per la simulazione e verifica dei design VHDL.
 
 \subsubsection{Tesh bench fornito}
-
-In questo test bench viene illustrato il funzionamento del design con una sequenza definita come 'normale', in cui viene mostrato il corretto utilizzo di tutti i segnali per interfacciarsi con la RAM. Nella \autoref{fig:start_signal} e nella \autoref{fig:end_signal} è possibile osservare i segnali di inizio e fine elaborazione, che vengono attivati correttamente durante l'esecuzione del design. In particolare, il segnale di inizio elaborazione (\m{i\_start}), attivato una volta che il segnale di reset (\m{i\_rst}) è disattivato, avvia correttamente l'elaborazione del design, come si può notare dal cambiamento degli stati; in dettaglio, la FSM passa da \m{WAIT\_STATE} a \m{INIT\_STATE}, procedendo con la lettura della RAM. Una volta che il design ha terminato l'elaborazione della sequenza, il segnale di terminazione dell'elaborazione (\m{o\_done}) viene attivato e, infine, il segnale \m{i\_start} viene disattivato, rendendo il design pronto per una nuova elaborazione.
+In questo test bench viene illustrato il funzionamento del design con una sequenza definita come \textit{"normale"}, in cui viene mostrato il corretto utilizzo di tutti i segnali per interfacciarsi con la RAM. Nella \autoref{fig:start_signal} e nella \autoref{fig:end_signal} è possibile osservare i segnali di inizio e fine elaborazione, che vengono attivati correttamente durante l'esecuzione del design. In particolare, il segnale di inizio elaborazione (\m{i\_start}), attivato una volta che il segnale di reset (\m{i\_rst}) è disattivato, avvia correttamente l'elaborazione del design, come si può notare dal cambiamento degli stati; in dettaglio, la FSM passa da \m{WAIT\_STATE} a \m{INIT\_STATE}, procedendo con la lettura della RAM. Una volta che il design ha terminato l'elaborazione della sequenza, il segnale di terminazione dell'elaborazione (\m{o\_done}) viene attivato e, infine, il segnale \m{i\_start} viene disattivato, rendendo il design pronto per una nuova elaborazione.
 
 \vspace{0.5em}
 
@@ -295,8 +395,7 @@ In questo test bench viene illustrato il funzionamento del design con una sequen
 \end{figure}
 
 \subsubsection{Sequenza di lunghezza nulla}
-
-In questo test bench viene illustrato il comportamento del design quando la sequenza è vuota, ovvero quando il segnale che indica la lunghezza della sequenza (\m{i\_k}) è pari a 0. Come mostrato nella \autoref{fig:empty_sequence}, il design avvia correttamente l'elaborazione non appena il segnale di reset viene disattivato e quello di start attivato. Tuttavia, appena rileva che \m{K} = 0 leggendo dalla RAM, il design conclude immediatamente l'elaborazione, attivando il segnale \m{o\_done}, che viene poi disattivato quando \m{i\_start} è disattivato. La FSM, una volta attivato \m{i\_start}, passa da \m{WAIT\_STATE} a \m{INIT\_STATE}; da quest'ultimo stato, procede a \m{DONE\_STATE} se \m{K} = 0, altrimenti passa a \m{WAIT\_FOR\_MEM\_STATE}, come si può osservare nella figura.
+In questo test bench viene illustrato il comportamento del design quando la sequenza è vuota, ovvero quando il segnale che indica la lunghezza della sequenza (\m{i\_k}) è pari a 0. Come mostrato nella \autoref{fig:empty_sequence}, il design avvia correttamente l'elaborazione non appena il segnale di reset viene disattivato e quello di start attivato. Tuttavia, appena rileva che \m{k} = 0 leggendo dalla RAM, il design conclude immediatamente l'elaborazione, attivando il segnale \m{o\_done}, che viene poi disattivato quando \m{i\_start} è disattivato. La FSM, una volta attivato \m{i\_start}, passa da \m{WAIT\_STATE} a \m{INIT\_STATE}; da quest'ultimo stato, procede a \m{DONE\_STATE} se \m{k} = 0, altrimenti passa a \m{WAIT\_FOR\_MEM\_STATE}, come si può osservare nella figura.
 
 \vspace{0.5em}
 \begin{figure}[htbp]
@@ -305,8 +404,8 @@ In questo test bench viene illustrato il comportamento del design quando la sequ
     \caption{Sequenza di lunghezza nulla}
     \label{fig:empty_sequence}
 \end{figure}
-\subsubsection{Credibilità che raggiunge 0}
 
+\subsubsection{Credibilità che raggiunge 0}
 Questo test bench illustra il comportamento del design quando la credibilità viene decrementata ogni volta che si incontra uno zero in \m{W}, finché non si rileva un valore diverso da 0, momento in cui la credibilità viene reinizializzata a 31 per poi essere nuovamente decrementata se si incontra un altro zero. Secondo la specifica, una volta che la credibilità raggiunge 0, il design deve mantenere tale valore fino a che non si rileva un valore in \m{W} diverso da 0 o fino al termine della sequenza. Come previsto, alla fine della sequenza, il design deve attivare il segnale di fine elaborazione. Nella \autoref{fig:cred_0_start} e nella \autoref{fig:cred_0_end} è possibile osservare come il design si comporti correttamente, continuando a decrementare la credibilità fino a 0 e mantenendola a 0, dato che non si verificano valori diversi da 0 in \m{W}.
 
 \vspace{0.5em}
@@ -326,8 +425,8 @@ Questo test bench illustra il comportamento del design quando la credibilità vi
     \end{minipage}
     \label{fig:cred_0_sequence}
 \end{figure}
-\subsubsection{Test bench con sequenza nulla iniziale}
 
+\subsubsection{Test bench con sequenza nulla iniziale}
 In questo test bench si è voluto verificare il funzionamento del design quando la sequenza di parole \m{W} inizia con un valore pari a 0. In questo scenario, il design deve avviare l'elaborazione della sequenza mantenendo il valore \m{W} nullo e impostando e mantenendo la credibilità a 0, fino a quando non si legge dalla RAM un valore di \m{W} diverso da 0. A quel punto, il design si comporta come mostrato nei test bench precedenti. Nella \autoref{fig:value_0_start} e nella \autoref{fig:value_0_mid} si verifica che il design opera in modo appropriato: in particolare, si può notare come sia la credibilità che il valore di \m{W} rimangano a 0. Questo è evidenziato anche dal segnale \m{o\_mem\_data} (segnale che indica il valore da scrivere nella RAM all'indirizzo \m{o\_mem\_addr}), che resta a 0 fino a quando non viene letto dalla RAM un valore diverso da 0; nel caso del test bench, questo valore è 2 e la credibilità viene poi posta a 31.
 
 \vspace{0.5em}
@@ -347,8 +446,8 @@ In questo test bench si è voluto verificare il funzionamento del design quando 
     \end{minipage}
     \label{fig:value_0_sequence}
 \end{figure}
-\subsubsection{Sequenze multiple}
 
+\subsubsection{Sequenze multiple}
 In questo test bench si verifica come il design si comporta nell'elaborazione di sequenze multiple. Dalla specifica, il design, una volta completata l'elaborazione della prima sequenza, deve attivare il segnale di fine elaborazione (\m{o\_done}). Quando \m{o\_done} viene attivato, il segnale \m{i\_start} viene disattivato, seguito dalla disattivazione del segnale di fine elaborazione, il che indica che il modulo è pronto per una nuova elaborazione. Quando \m{i\_start} viene attivato una seconda volta, il modulo avvia la seconda elaborazione. Secondo la specifica, la seconda elaborazione non deve attendere il reset del modulo; questo è verificabile osservando come il modulo, una volta terminata l'elaborazione, passi da \m{DONE\_STATE} a \m{WAIT\_STATE}, e successivamente, con la riattivazione di \m{i\_start}, la FSM passi da \m{WAIT\_STATE} a \m{INIT\_STATE}, procedendo con l'elaborazione della nuova sequenza.
 
 \vspace{0.5em}
@@ -358,9 +457,9 @@ In questo test bench si verifica come il design si comporta nell'elaborazione di
     \caption{Sequenze multiple}
     \label{fig:multiple_sequences}
 \end{figure}
-\subsubsection{Segnale di reset}
 
-In questo test bench si verifica il corretto funzionamento del design in presenza del segnale di reset asincrono. Come si può notare dalla \autopageref{fig:reset}, nel test bench viene attivato il segnale di reset \m{i\_rst} anche se non sincronizzato con il periodo di clock. A seguito dell'attivazione del reset, il modulo viene re-inizializzato, disattivando correttamente tutti i segnali necessari. Tra questi segnali, vi sono quelli che si interfacciano con la RAM, come \m{o\_mem\_data}, \m{o\_mem\_we} e \m{o\_mem\_en}, oltre ai segnali interni al modulo, come \m{k}, \m{addr}, \m{data} e \m{cred}. Il corretto funzionamento del design è evidente anche dagli stati della FSM implementata nel modulo. La FSM passa dallo stato \m{WRITE\_CRED\_STATE} a \m{RST\_STATE} non appena il segnale di reset viene portato a 1. Successivamente, appena il segnale di reset viene disattivato e il clock è attivo, la FSM passa da \m{RST\_STATE} a \m{WAIT\_STATE}, indicando che il modulo è pronto per una nuova elaborazione.
+\subsubsection{Segnale di reset}
+In questo test bench si verifica il corretto funzionamento del design in presenza del segnale di reset asincrono. Come si può notare dalla \autoref{fig:reset}, nel test bench viene attivato il segnale di reset \m{i\_rst} anche se non sincronizzato con il periodo di clock. A seguito dell'attivazione del reset, il modulo viene re-inizializzato, disattivando correttamente tutti i segnali necessari. Tra questi segnali, vi sono quelli che si interfacciano con la RAM, come \m{o\_mem\_data}, \m{o\_mem\_we} e \m{o\_mem\_en}, oltre ai segnali interni al modulo, come \m{k}, \m{addr}, \m{data} e \m{cred}. Il corretto funzionamento del design è evidente anche dagli stati della FSM implementata nel modulo. La FSM passa dallo stato \m{WRITE\_CRED\_STATE} a \m{RST\_STATE} non appena il segnale di reset viene portato a 1. Successivamente, appena il segnale di reset viene disattivato e il clock è attivo, la FSM passa da \m{RST\_STATE} a \m{WAIT\_STATE}, indicando che il modulo è pronto per una nuova elaborazione.
 
 \vspace{0.5em}
 
@@ -372,7 +471,6 @@ In questo test bench si verifica il corretto funzionamento del design in presenz
 \end{figure}
 
 \subsubsection{Segnale di start nello stato di reset}
-
 In questo test bench si verifica il corner case in cui il segnale di inizio elaborazione rimane attivo per tutta la durata dell'attivazione del segnale di reset. Secondo la specifica, il sistema funziona correttamente quando, dopo che il segnale di reset viene disattivato, il modulo avvia l'elaborazione al momento in cui il segnale di start viene portato a 1. Tuttavia, non è specificato il comportamento nel caso in cui il segnale di start non venga mai abbassato, anche dopo l'attivazione del reset. Abbiamo quindi gestito questo scenario con la continuazione dell'elaborazione precedente, senza aspettare che il segnale di start venga abbassato e riattivato, come si può osservare nella \autoref{fig:start_in_reset}. Questa scelta è stata fatta immaginando il modulo in un contesto realistico. Ad esempio, se il modulo fosse responsabile di monitorare la corretta lettura di un dispositivo di rilevamento del battito cardiaco (con valori compresi tra 0 e 255) e dovesse segnalare un tecnico quando la credibilità del valore scende a 0, in caso di un reset del modulo senza che la periferica invii un nuovo segnale di start, il sistema continuerebbe a svolgere correttamente il suo compito.
 
 \vspace{0.5em}
@@ -385,11 +483,9 @@ In questo test bench si verifica il corner case in cui il segnale di inizio elab
 \end{figure}
 
 \subsubsection{Altri test bench}
-
 Oltre ai test bench mostrati precedentemente, il modulo è stato testato anche con sequenze di lunghezze variabili, da valori bassi fino a lunghezze di circa \m{K} $\approx 1000$. Il modulo è stato inoltre sottoposto a test con più di due sequenze e con segnali di reset casuali durante l'elaborazione.
 
 \section{Conclusioni}
-
-Il design sintetizzato funziona correttamente sia nei test di simulazione comportamentale che in quelli post-sintesi (sia timing che functional), dimostrando come il design rispetti pienamente le specifiche, compresi i vincoli riguardanti il periodo di clock, che risultano soddisfatti, come analizzato nel paragrafo dedicato al report di sintesi. Per garantire una sincronizzazione corretta ed efficiente, il modulo è stato implementato utilizzando un singolo processo; data la semplicità del progetto, questo approccio si è rivelato sufficiente. Tuttavia, se fossero stati richiesti vincoli sul periodo di clock più restrittivi, sarebbe stato necessario adottare un approccio diverso. Inoltre, si sarebbe potuto analizzare la FSM per identificare eventuali ridondanze, ottimizzando l'uso dei registri e rendendo il modulo più compatto da questo punto di vista.
+Il design sintetizzato funziona correttamente sia nei test di simulazione comportamentale che in quelli post-sintesi (sia \textit{timing} che \textit{functional}), dimostrando come il design rispetti pienamente le specifiche, compresi i vincoli riguardanti il periodo di clock, che risultano soddisfatti, come analizzato nel paragrafo dedicato al report di sintesi. Per garantire una sincronizzazione corretta ed efficiente, il modulo è stato implementato utilizzando un singolo processo; data la semplicità del progetto, questo approccio si è rivelato sufficiente. Tuttavia, se fossero stati richiesti vincoli sul periodo di clock più restrittivi, sarebbe stato necessario adottare un approccio diverso. Inoltre, si sarebbe potuto analizzare la FSM per identificare eventuali ridondanze, ottimizzando l'uso dei registri e rendendo il modulo più compatto da questo punto di vista.
 
 \end{document}
